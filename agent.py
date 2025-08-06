@@ -6,6 +6,7 @@ import requests
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 import random
+import json
 load_dotenv()
 
 # 1. Configuración mejorada del modelo
@@ -18,6 +19,18 @@ llm = ChatOllama(
     2. Nunca expliques código o procesos técnicos
     3. Mantén respuestas naturales como un camarero real"""
 )
+
+def guardar_historial_en_json(historial, nombre_archivo="historial.json"):
+    mensajes = []
+    for mensaje in historial:
+        if isinstance(mensaje, HumanMessage):
+            mensajes.append({"role": "cliente", "content": mensaje.content})
+        elif isinstance(mensaje, AIMessage):
+            mensajes.append({"role": "camarero", "content": mensaje.content})
+    
+    with open(nombre_archivo, "w", encoding="utf-8") as f:
+        json.dump(mensajes, f, ensure_ascii=False, indent=4)
+
 
 # 2. Herramienta mejor definida
 @tool
@@ -77,6 +90,7 @@ while True:
                 HumanMessage(content=user_input),
                 AIMessage(content=response['output'])
             ])
+            guardar_historial_en_json(history)
         else:
             print("\nCamarero: Disculpe, no entendí. ¿Podría repetirlo?")
 
